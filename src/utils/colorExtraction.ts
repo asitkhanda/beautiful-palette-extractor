@@ -6,33 +6,60 @@ export interface Color {
 
 export function extractColorsFromImage(imageUrl: string, numColors: number = 8): Promise<string[]> {
   return new Promise((resolve) => {
+    // Security: Input validation
+    if (!isValidImageUrl(imageUrl) || numColors < 1 || numColors > 20) {
+      resolve([]);
+      return;
+    }
+
     const img = new Image();
     img.crossOrigin = 'anonymous';
     
+    // Security: Add timeout for image loading
+    const timeoutId = setTimeout(() => {
+      resolve([]);
+    }, 15000); // 15 second timeout
+    
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      clearTimeout(timeoutId);
       
-      if (!ctx) {
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          resolve([]);
+          return;
+        }
+        
+        // Security: Validate image dimensions
+        if (img.width > 4096 || img.height > 4096 || img.width < 1 || img.height < 1) {
+          resolve([]);
+          return;
+        }
+        
+        // Resize image for faster processing
+        const maxSize = 200;
+        const scale = Math.min(maxSize / img.width, maxSize / img.height);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const colors = extractDominantColors(imageData, numColors);
+        
+        resolve(colors.map(color => sanitizeHexColor(colorToHex(color))));
+      } catch (error) {
         resolve([]);
-        return;
       }
-      
-      // Resize image for faster processing
-      const maxSize = 200;
-      const scale = Math.min(maxSize / img.width, maxSize / img.height);
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
-      
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const colors = extractDominantColors(imageData, numColors);
-      
-      resolve(colors.map(colorToHex));
     };
     
-    img.onerror = () => resolve([]);
+    img.onerror = () => {
+      clearTimeout(timeoutId);
+      resolve([]);
+    };
+    
     img.src = imageUrl;
   });
 }
@@ -121,4 +148,37 @@ function colorToHex(color: Color): string {
   };
   
   return `#${toHex(color.r)}${toHex(color.g)}${toHex(color.b)}`;
+}
+
+// Security: Input validation functions
+function isValidImageUrl(url: string): boolean {
+  if (!url || typeof url !== 'string') return false;
+  
+  // Check for data URLs (base64 images)
+  if (url.startsWith('data:image/')) {
+    return /^data:image\/(jpeg|png|gif|webp|bmp);base64,/.test(url);
+  }
+  
+  // For other URLs, basic validation
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeHexColor(hex: string): string {
+  // Security: Validate and sanitize hex color format
+  if (!hex || typeof hex !== 'string') return '#000000';
+  
+  // Remove any non-hex characters except #
+  const sanitized = hex.replace(/[^#0-9a-fA-F]/g, '');
+  
+  // Ensure proper hex format
+  if (/^#[0-9a-fA-F]{6}$/.test(sanitized)) {
+    return sanitized.toLowerCase();
+  }
+  
+  return '#000000'; // Default fallback
 }

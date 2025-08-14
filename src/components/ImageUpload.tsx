@@ -37,15 +37,53 @@ export function ImageUpload({ onImageSelect }: ImageUploadProps) {
   };
 
   const handleFile = (file: File) => {
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          onImageSelect(e.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+    // Security: Check file size (max 10MB)
+    const maxSizeInBytes = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSizeInBytes) {
+      alert('File size too large. Please select an image under 10MB.');
+      return;
     }
+
+    // Security: Enhanced file validation
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file.');
+      return;
+    }
+
+    // Security: Validate file extension matches MIME type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Unsupported image format. Please use JPEG, PNG, GIF, WebP, or BMP.');
+      return;
+    }
+
+    const reader = new FileReader();
+    
+    // Security: Add timeout for file reading
+    const timeoutId = setTimeout(() => {
+      reader.abort();
+      alert('File reading timed out. Please try a smaller image.');
+    }, 30000); // 30 second timeout
+
+    reader.onload = (e) => {
+      clearTimeout(timeoutId);
+      if (e.target?.result) {
+        // Security: Basic validation of data URL format
+        const result = e.target.result as string;
+        if (result.startsWith('data:image/')) {
+          onImageSelect(result);
+        } else {
+          alert('Invalid image data. Please try another image.');
+        }
+      }
+    };
+
+    reader.onerror = () => {
+      clearTimeout(timeoutId);
+      alert('Error reading file. Please try another image.');
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const openFileDialog = () => {
