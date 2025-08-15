@@ -38,8 +38,8 @@ export function extractColorsFromImage(imageUrl: string, numColors: number = 8):
           return;
         }
         
-        // Security: Validate image dimensions
-        if (img.width > 4096 || img.height > 4096 || img.width < 1 || img.height < 1) {
+        // Security: Validate image dimensions (increased limit for modern high-res images)
+        if (img.width > 16384 || img.height > 16384 || img.width < 1 || img.height < 1) {
           console.log('❌ Invalid image dimensions:', { width: img.width, height: img.height });
           resolve([]);
           return;
