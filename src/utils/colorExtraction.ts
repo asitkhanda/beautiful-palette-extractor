@@ -6,8 +6,11 @@ export interface Color {
 
 export function extractColorsFromImage(imageUrl: string, numColors: number = 8): Promise<string[]> {
   return new Promise((resolve) => {
+    console.log('🎨 Starting color extraction for:', imageUrl);
+    
     // Security: Input validation
     if (!isValidImageUrl(imageUrl) || numColors < 1 || numColors > 20) {
+      console.log('❌ Invalid image URL or numColors:', { imageUrl, numColors });
       resolve([]);
       return;
     }
@@ -17,23 +20,27 @@ export function extractColorsFromImage(imageUrl: string, numColors: number = 8):
     
     // Security: Add timeout for image loading
     const timeoutId = setTimeout(() => {
+      console.log('⏰ Image loading timeout');
       resolve([]);
     }, 15000); // 15 second timeout
     
     img.onload = () => {
       clearTimeout(timeoutId);
+      console.log('✅ Image loaded successfully:', { width: img.width, height: img.height });
       
       try {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
         if (!ctx) {
+          console.log('❌ Could not get canvas context');
           resolve([]);
           return;
         }
         
         // Security: Validate image dimensions
         if (img.width > 4096 || img.height > 4096 || img.width < 1 || img.height < 1) {
+          console.log('❌ Invalid image dimensions:', { width: img.width, height: img.height });
           resolve([]);
           return;
         }
@@ -44,19 +51,29 @@ export function extractColorsFromImage(imageUrl: string, numColors: number = 8):
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
         
+        console.log('🖼️ Processing image at size:', { width: canvas.width, height: canvas.height });
+        
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const colors = extractDominantColors(imageData, numColors);
+        console.log('📊 Got image data, pixels:', imageData.data.length / 4);
         
-        resolve(colors.map(color => sanitizeHexColor(colorToHex(color))));
+        const colors = extractDominantColors(imageData, numColors);
+        console.log('🎨 Extracted colors:', colors);
+        
+        const hexColors = colors.map(color => sanitizeHexColor(colorToHex(color)));
+        console.log('🎯 Final hex colors:', hexColors);
+        
+        resolve(hexColors);
       } catch (error) {
+        console.log('❌ Error during color extraction:', error);
         resolve([]);
       }
     };
     
-    img.onerror = () => {
+    img.onerror = (error) => {
       clearTimeout(timeoutId);
+      console.log('❌ Image loading error:', error);
       resolve([]);
     };
     
