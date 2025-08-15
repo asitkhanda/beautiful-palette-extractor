@@ -171,7 +171,7 @@ const Index = () => {
       <footer className="border-t border-border/50 bg-card/30 backdrop-blur-sm mt-16">
         <div className="container mx-auto px-4 py-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Built with ❤️ for designers and developers
+            Built with ❤️ by <a href="https://asit.design" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors underline">Asit Khanda</a> & AI for designers and developers
           </p>
         </div>
       </footer>
