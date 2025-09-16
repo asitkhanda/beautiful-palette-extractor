@@ -1,10 +1,17 @@
+import { OKLCHColor, RGBColor, rgbToOklch, oklchToRgb, rgbToHex } from './oklchUtils';
+
 export interface Color {
   r: number;
   g: number;
   b: number;
 }
 
-export function extractColorsFromImage(imageUrl: string, numColors: number = 8): Promise<string[]> {
+export interface ColorPalette {
+  hex: string;
+  oklch: OKLCHColor;
+}
+
+export function extractColorsFromImage(imageUrl: string, numColors: number = 8): Promise<ColorPalette[]> {
   return new Promise((resolve) => {
     console.log('🎨 Starting color extraction for:', imageUrl);
     
@@ -59,12 +66,18 @@ export function extractColorsFromImage(imageUrl: string, numColors: number = 8):
         console.log('📊 Got image data, pixels:', imageData.data.length / 4);
         
         const colors = extractDominantColors(imageData, numColors);
-        console.log('🎨 Extracted colors:', colors);
+        console.log('🎨 Extracted RGB colors:', colors);
         
-        const hexColors = colors.map(color => sanitizeHexColor(colorToHex(color)));
-        console.log('🎯 Final hex colors:', hexColors);
+        // Convert to OKLCH color palette
+        const palette = colors.map(color => {
+          const hex = sanitizeHexColor(colorToHex(color));
+          const oklch = rgbToOklch(color);
+          console.log(`🎯 Color ${hex} -> OKLCH(${oklch.l.toFixed(3)}, ${oklch.c.toFixed(3)}, ${oklch.h.toFixed(1)}°)`);
+          return { hex, oklch };
+        });
         
-        resolve(hexColors);
+        console.log('✨ Final OKLCH palette:', palette);
+        resolve(palette);
       } catch (error) {
         console.log('❌ Error during color extraction:', error);
         resolve([]);

@@ -47,22 +47,54 @@ function applyColorBlindnessMatrix(rgb: RGB, type: ColorBlindnessType): RGB {
   let newR: number, newG: number, newB: number;
   
   switch (type) {
-    case 'protanopia': // Red-blind
+    case 'protanopia': // Red-blind (complete)
       newR = 0.567 * r + 0.433 * g + 0.000 * b;
       newG = 0.558 * r + 0.442 * g + 0.000 * b;
       newB = 0.000 * r + 0.242 * g + 0.758 * b;
       break;
       
-    case 'deuteranopia': // Green-blind
+    case 'protanomaly': // Red-weak (partial)
+      newR = 0.817 * r + 0.183 * g + 0.000 * b;
+      newG = 0.333 * r + 0.667 * g + 0.000 * b;
+      newB = 0.000 * r + 0.125 * g + 0.875 * b;
+      break;
+      
+    case 'deuteranopia': // Green-blind (complete)
       newR = 0.625 * r + 0.375 * g + 0.000 * b;
       newG = 0.700 * r + 0.300 * g + 0.000 * b;
       newB = 0.000 * r + 0.300 * g + 0.700 * b;
       break;
       
-    case 'tritanopia': // Blue-blind
+    case 'deuteranomaly': // Green-weak (partial)
+      newR = 0.800 * r + 0.200 * g + 0.000 * b;
+      newG = 0.258 * r + 0.742 * g + 0.000 * b;
+      newB = 0.000 * r + 0.142 * g + 0.858 * b;
+      break;
+      
+    case 'tritanopia': // Blue-blind (complete)
       newR = 0.950 * r + 0.050 * g + 0.000 * b;
       newG = 0.000 * r + 0.433 * g + 0.567 * b;
       newB = 0.000 * r + 0.475 * g + 0.525 * b;
+      break;
+      
+    case 'tritanomaly': // Blue-weak (partial)
+      newR = 0.967 * r + 0.033 * g + 0.000 * b;
+      newG = 0.000 * r + 0.733 * g + 0.267 * b;
+      newB = 0.000 * r + 0.183 * g + 0.817 * b;
+      break;
+      
+    case 'achromatopsia': // Complete color blindness (monochromacy)
+      const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+      newR = gray;
+      newG = gray;
+      newB = gray;
+      break;
+      
+    case 'achromatomaly': // Partial color blindness (blue cone monochromacy)
+      const partialGray = 0.618 * r + 0.320 * g + 0.062 * b;
+      newR = 0.299 * r + 0.587 * g + 0.114 * b;
+      newG = 0.299 * r + 0.587 * g + 0.114 * b;
+      newB = partialGray;
       break;
       
     default:

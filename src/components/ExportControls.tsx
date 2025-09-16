@@ -1,6 +1,7 @@
 import { Download, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { hexToRgb, rgbToOklch, oklchToCss } from '@/utils/oklchUtils';
 
 interface ExportControlsProps {
   colors: string[];
@@ -33,7 +34,7 @@ export function ExportControls({ colors }: ExportControlsProps) {
     }
   };
 
-  const exportAsFigmaJSON = () => {
+  const exportAsOKLCH = async () => {
     if (colors.length === 0) {
       toast({
         title: "No colors to export",
@@ -43,45 +44,86 @@ export function ExportControls({ colors }: ExportControlsProps) {
       return;
     }
 
-    const figmaColors = colors.map((color, index) => ({
-      name: `Color ${index + 1}`,
-      hex: color,
-      rgb: hexToRgb(color),
-    }));
+    const oklchStrings = colors.map(color => {
+      const rgb = hexToRgb(color);
+      const oklch = rgbToOklch(rgb);
+      return oklchToCss(oklch);
+    });
+    
+    const oklchString = oklchStrings.join(', ');
+    try {
+      await navigator.clipboard.writeText(oklchString);
+      toast({
+        title: "OKLCH codes copied!",
+        description: "All OKLCH color codes copied to clipboard",
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy OKLCH codes to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
 
-    const figmaJSON = {
-      name: "Extracted Color Palette",
-      description: "Color palette extracted from image",
-      colors: figmaColors,
+  const exportAsDesignJSON = () => {
+    if (colors.length === 0) {
+      toast({
+        title: "No colors to export",
+        description: "Please generate a palette first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const designColors = colors.map((color, index) => {
+      const rgb = hexToRgb(color);
+      const oklch = rgbToOklch(rgb);
+      return {
+        name: `Color ${index + 1}`,
+        hex: color,
+        oklch: oklchToCss(oklch),
+        rgb: {
+          r: rgb.r,
+          g: rgb.g,
+          b: rgb.b
+        },
+        figmaRgb: {
+          r: rgb.r / 255,
+          g: rgb.g / 255,
+          b: rgb.b / 255,
+        }
+      };
+    });
+
+    const designJSON = {
+      name: "a11y OKLCH Palette",
+      description: "Accessible color palette with OKLCH values extracted from image",
+      format: "OKLCH + HEX + RGB",
+      colors: designColors,
+      metadata: {
+        extractedAt: new Date().toISOString(),
+        totalColors: colors.length,
+        colorSpace: "OKLCH"
+      }
     };
 
-    const blob = new Blob([JSON.stringify(figmaJSON, null, 2)], {
+    const blob = new Blob([JSON.stringify(designJSON, null, 2)], {
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'color-palette.json';
+    a.download = 'a11y-oklch-palette.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
     toast({
-      title: "Figma JSON downloaded!",
-      description: "Color palette saved as JSON file",
+      title: "Design JSON downloaded!",
+      description: "OKLCH palette saved as JSON file",
     });
-  };
-
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          r: parseInt(result[1], 16) / 255,
-          g: parseInt(result[2], 16) / 255,
-          b: parseInt(result[3], 16) / 255,
-        }
-      : { r: 0, g: 0, b: 0 };
   };
 
   if (colors.length === 0) {
@@ -92,21 +134,30 @@ export function ExportControls({ colors }: ExportControlsProps) {
     <div className="flex flex-col sm:flex-row gap-4 justify-center">
       <Button
         onClick={exportAsHex}
-        variant="export"
+        variant="outline"
         size="lg"
         className="min-w-[180px]"
       >
         <Copy className="h-4 w-4" />
-        Export as HEX Codes
+        Copy HEX Codes
       </Button>
       <Button
-        onClick={exportAsFigmaJSON}
-        variant="export"
+        onClick={exportAsOKLCH}
+        variant="outline"
+        size="lg"
+        className="min-w-[180px]"
+      >
+        <Copy className="h-4 w-4" />
+        Copy OKLCH Codes
+      </Button>
+      <Button
+        onClick={exportAsDesignJSON}
+        variant="outline"
         size="lg"
         className="min-w-[180px]"
       >
         <Download className="h-4 w-4" />
-        Export as Figma JSON
+        Export Design JSON
       </Button>
     </div>
   );

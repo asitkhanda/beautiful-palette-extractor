@@ -4,7 +4,7 @@ import { ImageUpload } from '@/components/ImageUpload';
 import { ColorPalette } from '@/components/ColorPalette';
 import { ColorBlindnessSimulator, ColorBlindnessType } from '@/components/ColorBlindnessSimulator';
 import { ExportControls } from '@/components/ExportControls';
-import { extractColorsFromImage } from '@/utils/colorExtraction';
+import { extractColorsFromImage, ColorPalette as ColorPaletteType } from '@/utils/colorExtraction';
 import { simulateColorBlindness } from '@/utils/colorBlindness';
 import { toast } from '@/hooks/use-toast';
 
@@ -20,14 +20,15 @@ const Index = () => {
     setUploadedImage(imageUrl);
     
     try {
-      const colors = await extractColorsFromImage(imageUrl, 8);
-      setOriginalColors(colors);
-      setDisplayedColors(colors);
+      const palette = await extractColorsFromImage(imageUrl, 8);
+      const hexColors = palette.map(p => p.hex);
+      setOriginalColors(hexColors);
+      setDisplayedColors(hexColors);
       setColorBlindnessType('original');
       
       toast({
-        title: "Palette generated!",
-        description: `Extracted ${colors.length} colors from your image`,
+        title: "OKLCH Palette generated!",
+        description: `Extracted ${palette.length} perceptually uniform colors from your image`,
       });
     } catch (error) {
       toast({
@@ -56,8 +57,8 @@ const Index = () => {
               <Palette className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Color Palette Extractor</h1>
-              <p className="text-sm text-muted-foreground">Generate beautiful color palettes from any image</p>
+              <h1 className="text-2xl font-bold text-foreground">a11y Palette Extractor</h1>
+              <p className="text-sm text-muted-foreground">Generate accessible OKLCH color palettes from any image</p>
             </div>
           </div>
         </div>
@@ -69,14 +70,14 @@ const Index = () => {
         <section className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-2 text-primary mb-2">
             <Sparkles className="h-5 w-5" />
-            <span className="text-sm font-medium">AI-Powered Color Extraction</span>
+            <span className="text-sm font-medium">OKLCH + Accessibility Focused</span>
             <Sparkles className="h-5 w-5" />
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-            Extract Beautiful Color Palettes
+            Extract Accessible OKLCH Palettes
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Upload any image and instantly generate a perfect 8-color palette with accessibility features and professional export options.
+            Upload any image and instantly generate perceptually uniform OKLCH color palettes with comprehensive color blindness simulation and accessibility features.
           </p>
         </section>
 
@@ -148,9 +149,9 @@ const Index = () => {
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
                   <span className="text-primary font-bold">2</span>
                 </div>
-                <h3 className="font-semibold text-foreground">Generate Palette</h3>
+                <h3 className="font-semibold text-foreground">Generate OKLCH Palette</h3>
                 <p className="text-sm text-muted-foreground">
-                  Our AI extracts 8 dominant colors automatically
+                  Our algorithm extracts 8 perceptually uniform OKLCH colors
                 </p>
               </div>
               <div className="text-center space-y-3">
@@ -159,7 +160,7 @@ const Index = () => {
                 </div>
                 <h3 className="font-semibold text-foreground">Export & Use</h3>
                 <p className="text-sm text-muted-foreground">
-                  Copy HEX codes or download Figma-ready JSON
+                  Copy HEX/OKLCH codes or export for design tools
                 </p>
               </div>
             </div>
