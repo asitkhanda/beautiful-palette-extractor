@@ -48,134 +48,128 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-6">
+    <div className="h-screen bg-gradient-to-br from-background via-background to-primary/5 flex flex-col">
+      {/* Compact Header */}
+      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm flex-shrink-0">
+        <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-center space-x-3">
             <div className="p-2 rounded-lg bg-gradient-to-r from-primary to-accent">
-              <Palette className="h-6 w-6 text-white" />
+              <Palette className="h-5 w-5 text-white" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">a11y Palette Extractor</h1>
-              <p className="text-sm text-muted-foreground">Generate accessible OKLCH color palettes from any image</p>
+            <div className="text-center">
+              <h1 className="text-xl font-bold text-foreground">a11y Palette Extractor</h1>
+              <p className="text-xs text-muted-foreground">OKLCH + Accessibility Focused</p>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* Hero Section */}
-        <section className="text-center space-y-4">
-          <div className="flex items-center justify-center space-x-2 text-primary mb-2">
-            <Sparkles className="h-5 w-5" />
-            <span className="text-sm font-medium">OKLCH + Accessibility Focused</span>
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-            Extract Accessible OKLCH Palettes
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Upload any image and instantly generate perceptually uniform OKLCH color palettes with comprehensive color blindness simulation and accessibility features.
-          </p>
-        </section>
+      {/* Two-Pane Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Pane - Controls */}
+        <div className="w-1/2 p-6 flex flex-col space-y-6 overflow-y-auto">
+          {/* Hero Section */}
+          <section className="text-center space-y-3">
+            <div className="flex items-center justify-center space-x-2 text-primary">
+              <Sparkles className="h-4 w-4" />
+              <span className="text-sm font-medium">Perceptually Uniform Colors</span>
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground">
+              Extract Accessible OKLCH Palettes
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Upload any image and generate perceptually uniform OKLCH colors with comprehensive accessibility simulation.
+            </p>
+          </section>
 
-        {/* Image Upload */}
-        <section>
-          <ImageUpload onImageSelect={handleImageSelect} />
-          {isProcessing && (
-            <div className="text-center mt-4">
-              <div className="inline-flex items-center space-x-2 text-primary">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></div>
-                <span className="text-sm">Extracting colors...</span>
+          {/* Image Upload */}
+          <section className="flex-shrink-0">
+            <ImageUpload onImageSelect={handleImageSelect} />
+            {isProcessing && (
+              <div className="text-center mt-4">
+                <div className="inline-flex items-center space-x-2 text-primary">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></div>
+                  <span className="text-sm">Extracting OKLCH colors...</span>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Uploaded Image Preview */}
+          {uploadedImage && (
+            <section className="flex-shrink-0">
+              <div className="bg-card rounded-lg p-4 shadow-[var(--shadow-card)]">
+                <h3 className="text-lg font-semibold text-foreground mb-3">Source Image</h3>
+                <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                  <img 
+                    src={uploadedImage} 
+                    alt="Uploaded for color extraction" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Color Blindness Simulator */}
+          {displayedColors.length > 0 && (
+            <section className="flex-shrink-0">
+              <div className="bg-card rounded-lg p-4 shadow-[var(--shadow-card)]">
+                <ColorBlindnessSimulator 
+                  value={colorBlindnessType} 
+                  onChange={handleColorBlindnessChange} 
+                />
+              </div>
+            </section>
+          )}
+
+          {/* Export Controls */}
+          {displayedColors.length > 0 && (
+            <section className="flex-shrink-0">
+              <div className="bg-card rounded-lg p-4 shadow-[var(--shadow-card)]">
+                <h3 className="text-lg font-semibold text-foreground mb-4 text-center">Export Options</h3>
+                <ExportControls colors={displayedColors} />
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* Right Pane - Results */}
+        <div className="w-1/2 p-6 border-l border-border/50 flex flex-col">
+          {displayedColors.length > 0 ? (
+            <div className="flex-1 flex flex-col">
+              <ColorPalette colors={displayedColors} />
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-4 max-w-sm">
+                <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-r from-primary/20 to-accent/20 flex items-center justify-center">
+                  <Palette className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground">Upload an Image</h3>
+                <p className="text-muted-foreground text-sm">
+                  Your OKLCH color palette will appear here once you upload and process an image.
+                </p>
+                <div className="space-y-2 text-xs text-muted-foreground">
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    <span>OKLCH perceptual uniformity</span>
+                  </div>
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-accent"></div>
+                    <span>9 color blindness simulations</span>
+                  </div>
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-success"></div>
+                    <span>HEX + OKLCH export formats</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
-        </section>
-
-        {/* Uploaded Image Preview */}
-        {uploadedImage && (
-          <section className="flex justify-center">
-            <div className="max-w-md">
-              <h3 className="text-lg font-semibold text-foreground mb-3 text-center">Source Image</h3>
-              <img
-                src={uploadedImage}
-                alt="Uploaded image"
-                className="w-full rounded-lg shadow-[var(--shadow-card)] max-h-48 object-cover"
-              />
-            </div>
-          </section>
-        )}
-
-        {/* Color Blindness Simulator */}
-        {originalColors.length > 0 && (
-          <section className="flex justify-center">
-            <ColorBlindnessSimulator
-              value={colorBlindnessType}
-              onChange={handleColorBlindnessChange}
-            />
-          </section>
-        )}
-
-        {/* Color Palette */}
-        {displayedColors.length > 0 && (
-          <section>
-            <ColorPalette colors={displayedColors} />
-          </section>
-        )}
-
-        {/* Export Controls */}
-        {originalColors.length > 0 && (
-          <section>
-            <ExportControls colors={displayedColors} />
-          </section>
-        )}
-
-        {/* Instructions */}
-        {originalColors.length === 0 && !isProcessing && (
-          <section className="max-w-3xl mx-auto">
-            <div className="grid md:grid-cols-3 gap-6 mt-12">
-              <div className="text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                  <span className="text-primary font-bold">1</span>
-                </div>
-                <h3 className="font-semibold text-foreground">Upload Image</h3>
-                <p className="text-sm text-muted-foreground">
-                  Drop your image or click to select from your device
-                </p>
-              </div>
-              <div className="text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                  <span className="text-primary font-bold">2</span>
-                </div>
-                <h3 className="font-semibold text-foreground">Generate OKLCH Palette</h3>
-                <p className="text-sm text-muted-foreground">
-                  Our algorithm extracts 8 perceptually uniform OKLCH colors
-                </p>
-              </div>
-              <div className="text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                  <span className="text-primary font-bold">3</span>
-                </div>
-                <h3 className="font-semibold text-foreground">Export & Use</h3>
-                <p className="text-sm text-muted-foreground">
-                  Copy HEX/OKLCH codes or export for design tools
-                </p>
-              </div>
-            </div>
-          </section>
-        )}
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-border/50 bg-card/30 backdrop-blur-sm mt-16">
-        <div className="container mx-auto px-4 py-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            Built with ❤️ by <a href="https://asit.design" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors underline">Asit Khanda</a> & AI for designers and developers
-          </p>
         </div>
-      </footer>
+      </div>
     </div>
   );
 };

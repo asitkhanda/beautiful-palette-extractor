@@ -10,12 +10,12 @@ export function ColorPalette({ colors }: ColorPaletteProps) {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <div className="bg-card rounded-lg p-6 shadow-[var(--shadow-card)]">
-        <h2 className="text-xl font-semibold text-foreground mb-6 text-center">
+    <div className="flex-1 flex flex-col">
+      <div className="bg-card rounded-lg p-4 shadow-[var(--shadow-card)] flex-1 flex flex-col">
+        <h2 className="text-lg font-semibold text-foreground mb-4 text-center">
           Generated OKLCH Palette
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+        <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-3">
           {colors.map((color, index) => (
             <ColorSwatch key={index} color={color} index={index} />
           ))}

@@ -131,33 +131,33 @@ export function ExportControls({ colors }: ExportControlsProps) {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+    <div className="flex flex-col sm:flex-row gap-3 justify-center">
       <Button
         onClick={exportAsHex}
         variant="outline"
-        size="lg"
-        className="min-w-[180px]"
+        size="sm"
+        className="min-w-[140px]"
       >
-        <Copy className="h-4 w-4" />
-        Copy HEX Codes
+        <Copy className="h-3 w-3" />
+        Copy HEX
       </Button>
       <Button
         onClick={exportAsOKLCH}
         variant="outline"
-        size="lg"
-        className="min-w-[180px]"
+        size="sm"
+        className="min-w-[140px]"
       >
-        <Copy className="h-4 w-4" />
-        Copy OKLCH Codes
+        <Copy className="h-3 w-3" />
+        Copy OKLCH
       </Button>
       <Button
         onClick={exportAsDesignJSON}
         variant="outline"
-        size="lg"
-        className="min-w-[180px]"
+        size="sm"
+        className="min-w-[140px]"
       >
-        <Download className="h-4 w-4" />
-        Export Design JSON
+        <Download className="h-3 w-3" />
+        Export JSON
       </Button>
     </div>
   );
