@@ -1,8 +1,8 @@
-# Welcome to your Lovable project
+# Accessible Color Palette Generator
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/8a399d85-b1d7-4326-af43-faad33e7ac5f
+**URL**: https://beautiful-palette-extractor.lovable.app
 
 ## How can I edit this code?
 
@@ -59,15 +59,3 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/8a399d85-b1d7-4326-af43-faad33e7ac5f) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
