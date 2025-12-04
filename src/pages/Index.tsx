@@ -52,19 +52,33 @@ function oklchToCss(oklch: OKLCH): string {
 }
 
 // ===== CVD SIMULATION =====
-type CVDType = 'normal' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'achromatopsia';
+type CVDType = 'normal' | 'protanopia' | 'protanomaly' | 'deuteranopia' | 'deuteranomaly' | 'tritanopia' | 'tritanomaly' | 'achromatopsia' | 'achromatomaly';
 
-const CVD_MATRICES: Record<CVDType, number[][]> = {
+const CVD_MATRICES: Record<Exclude<CVDType, 'achromatomaly'>, number[][]> = {
   normal: [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
   protanopia: [[0.567, 0.433, 0], [0.558, 0.442, 0], [0, 0.242, 0.758]],
+  protanomaly: [[0.817, 0.183, 0], [0.333, 0.667, 0], [0, 0.125, 0.875]],
   deuteranopia: [[0.625, 0.375, 0], [0.7, 0.3, 0], [0, 0.3, 0.7]],
+  deuteranomaly: [[0.8, 0.2, 0], [0.258, 0.742, 0], [0, 0.142, 0.858]],
   tritanopia: [[0.95, 0.05, 0], [0, 0.433, 0.567], [0, 0.475, 0.525]],
+  tritanomaly: [[0.967, 0.033, 0], [0, 0.733, 0.267], [0, 0.183, 0.817]],
   achromatopsia: [[0.299, 0.587, 0.114], [0.299, 0.587, 0.114], [0.299, 0.587, 0.114]],
 };
 
 function simulateCVD(hex: string, type: CVDType): string {
   if (type === 'normal') return hex;
   const rgb = hexToRgb(hex);
+  
+  // Achromatomaly is partial grayscale (blend 50% with original)
+  if (type === 'achromatomaly') {
+    const gray = Math.round(0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b);
+    return rgbToHex({
+      r: Math.round((rgb.r + gray) / 2),
+      g: Math.round((rgb.g + gray) / 2),
+      b: Math.round((rgb.b + gray) / 2),
+    });
+  }
+  
   const matrix = CVD_MATRICES[type];
   const r = Math.round(Math.min(255, Math.max(0, matrix[0][0] * rgb.r + matrix[0][1] * rgb.g + matrix[0][2] * rgb.b)));
   const g = Math.round(Math.min(255, Math.max(0, matrix[1][0] * rgb.r + matrix[1][1] * rgb.g + matrix[1][2] * rgb.b)));
@@ -137,11 +151,15 @@ interface PaletteColor {
 }
 
 const CVD_OPTIONS: { value: CVDType; label: string }[] = [
-  { value: 'normal', label: 'Normal Vision' },
+  { value: 'normal', label: 'Original Palette' },
   { value: 'protanopia', label: 'Protanopia (Red-blind)' },
+  { value: 'protanomaly', label: 'Protanomaly (Red-weak)' },
   { value: 'deuteranopia', label: 'Deuteranopia (Green-blind)' },
+  { value: 'deuteranomaly', label: 'Deuteranomaly (Green-weak)' },
   { value: 'tritanopia', label: 'Tritanopia (Blue-blind)' },
-  { value: 'achromatopsia', label: 'Achromatopsia (Monochrome)' },
+  { value: 'tritanomaly', label: 'Tritanomaly (Blue-weak)' },
+  { value: 'achromatopsia', label: 'Achromatopsia (Complete)' },
+  { value: 'achromatomaly', label: 'Achromatomaly (Partial)' },
 ];
 
 export default function Index() {
@@ -334,7 +352,7 @@ export default function Index() {
                         </button>
                       </div>
                     </div>
-                    <p className="text-[10px] font-mono text-on-surface-variant mb-2 truncate cursor-pointer hover:text-primary" onClick={(e) => { e.stopPropagation(); handleCopy(color, i, 'oklch'); }}>{oklchToCss(color.oklch)}</p>
+                    <p className="text-[10px] font-mono text-on-surface-variant mb-2 cursor-pointer hover:text-primary break-all leading-relaxed" onClick={(e) => { e.stopPropagation(); handleCopy(color, i, 'oklch'); }}>{oklchToCss(color.oklch)}</p>
                     <div className="flex gap-1">
                       <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${color.contrastWhite >= 4.5 ? 'bg-primary-container text-primary-on-container' : 'bg-surface-container text-on-surface-variant'}`}>
                         W:{color.contrastWhite.toFixed(1)}
